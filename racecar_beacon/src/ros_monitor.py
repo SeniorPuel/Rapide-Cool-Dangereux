@@ -40,16 +40,25 @@ class ROSMonitor:
         # If something is at less than 1.0m, set obstacle to true
         for value in ranges:
             if value <= 1.0: self.obstacle = False
+
         # Debug
         #print("Got msg from /scan: ", self.obstacle)
+
 
     def odo_update(self, odo_msg):
         # Extract the position and orientation from the Odometry message
         self.pos[0] = odo_msg.pose.pose.position.x
+
         self.pos[1] = odo_msg.pose.pose.position.y  
         self.pos[2] = quaternion_to_yaw(odo_msg.pose.pose.orientation)
         #print("Position (X, Y, Theta): {:.2f}, {:.2f}, {:.2f}".format(self.position.x, self.position.y, yaw))
-    
+
+    def pack_data(self):
+        data_format = "fffI"
+        data = pack(data_format, self.pos[0], self.pos[1], self.pos[2], self.id)
+        print("Packed data: ", data)
+        return data
+
     def rr_loop(self):
         # Init your socket here :
         # self.rr_socket = socket.Socket(...)
