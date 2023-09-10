@@ -18,12 +18,13 @@ class ROSMonitor:
         
         # Current robot state:
         self.id = 10
-        self.pos = (0,0,0) # x, y, theta
+        self.pos = [0,0,0] # x, y, theta
         self.obstacle = False
         
         # Params :
         self.remote_request_port = rospy.get_param("remote_request_port", 65432)
-        self.pos_broadcast_port  = rospy.get_param("pos_broadcast_port", 65431)
+        #self.pos_broadcast_port  = rospy.get_param("pos_broadcast_port", 65431)
+        self.pos_broadcast_port = 65431
         self.host = '127.0.0.1'
         # Thread for RemoteRequest handling:
         self.rr_thread = threading.Thread(target=self.rr_loop)
@@ -40,14 +41,14 @@ class ROSMonitor:
         for value in ranges:
             if value <= 1.0: self.obstacle = False
         # Debug
-        print("Got msg from /scan: ", self.obstacle)
+        #print("Got msg from /scan: ", self.obstacle)
 
     def odo_update(self, odo_msg):
         # Extract the position and orientation from the Odometry message
         self.pos[0] = odo_msg.pose.pose.position.x
         self.pos[1] = odo_msg.pose.pose.position.y  
         self.pos[2] = quaternion_to_yaw(odo_msg.pose.pose.orientation)
-        print("Position (X, Y, Theta): {:.2f}, {:.2f}, {:.2f}".format(self.position.x, self.position.y, yaw))
+        #print("Position (X, Y, Theta): {:.2f}, {:.2f}, {:.2f}".format(self.position.x, self.position.y, yaw))
     
     def rr_loop(self):
         # Init your socket here :
@@ -93,17 +94,24 @@ class ROSMonitor:
     def pack_data(self):
         data_format = "fffI"
         data = pack(data_format, self.pos[0], self.pos[1], self.pos[2], self.id)
-        print("Packed data: ", data)
+        #print("Packed data: ", data)
         return data
 
     def pb_loop(self):
         self.pb_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.pb_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+
+        # Send data to the client's broadcast or multicast address and port
+        client_broadcast_address = ('<broadcast>', 65431)  # Replace with client's broadcast address or multicast group
+        self.pb_socket.sendto(b'Message from server', client_broadcast_address)
+        
+        """
+        client_socket.bind(('0.0.0.0', self.pos_broadcast_port))  # Replace 12345 with the desired port
+        #self.pb_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
         while True:
             data = self.pack_data()
             self.pb_socket.sendto(data, ('<broadcast>', self.pos_broadcast_port))
-            time.sleep(1)
+            time.sleep(1)"""
 
 def quaternion_to_yaw(quat):
     (roll, pitch, yaw) = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
@@ -120,4 +128,5 @@ if __name__=="__main__":
     rospy.init_node("ros_monitor")
     node = ROSMonitor()
     node.rr_thread.start()
+    node.pb_thread.start()
     rospy.spin()
