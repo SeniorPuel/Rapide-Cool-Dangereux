@@ -3,6 +3,7 @@
 import rospy
 import socket
 import threading
+import time
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 from tf.transformations import euler_from_quaternion
@@ -20,6 +21,7 @@ class ROSMonitor:
         # Params :
         self.remote_request_port = rospy.get_param("remote_request_port", 65432)
         self.pos_broadcast_port  = rospy.get_param("pos_broadcast_port", 65431)
+        self.host = '127.0.0.1'
         # Thread for RemoteRequest handling:
         self.rr_thread = threading.Thread(target=self.rr_loop)
 
@@ -60,16 +62,46 @@ def handle_request(req):
     return MyServiceResponse(result)
     
 def rr_loop(self):
-        # Init your socket here :
-        # self.rr_socket = socket.Socket(...)
+    # Init your socket here :
+    # self.rr_socket = socket.Socket(...)
         
-        rospy.init_node('my_service_server')
+    self.rr_socket = socket.Socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((HOST, PORT))
+    s.listen(4)
+
+    print("Server is listening on {}:{}".format(HOST, PORT))
+
+ 
+
+    conn, addr = s.accept()
+    print("Connected by", addr)
+
+ 
+
+    while True:
+        data = conn.recv(1024).decode()
+        if not data:
+            break
+        print("Client: " + data)
+        message = input("Server > ")
+        conn.sendall(message.encode())
+
+    conn.close()
+        
+    rospy.init_node('my_service_server')
         s = rospy.Service('add_numbers', MyService, handle_request)
         print("ros_monitor started.")
         rospy.spin()
+
+    while True:
+        pass
+
+def pb_loop(self):
     
-        while True:
-            pass
+
+    time.sleep(1)
+    return
+    
 
 if __name__ == "__main__":
     rr_loop()
