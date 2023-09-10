@@ -39,14 +39,12 @@ class ROSMonitor:
         # If something is at less than 1.0m, set obstacle to true
         for value in ranges:
             if value <= 1.0: self.obstacle = False
-        # Debug
-        print("Got msg from /scan: ", self.obstacle)
 
     def odo_update(self, odo_msg):
         # Extract the position and orientation from the Odometry message
         self.pos[0] = odo_msg.pose.pose.position.x
         self.pos[1] = odo_msg.pose.pose.position.y 
-        self.pos[2] = quaternion_to_yaw(odo_msg.pose.pose.orientation)
+        self.pos[2] = quaternion_to_yaw(odo_msg.pose.pose.orientation)    
         #print("Position (X, Y, Theta): {:.2f}, {:.2f}, {:.2f}".format(self.position.x, self.position.y, yaw))
 
     def pack_data(self):
@@ -58,14 +56,49 @@ class ROSMonitor:
     def rr_loop(self):
         # Init your socket here :
         # self.rr_socket = socket.Socket(...)
-        
-        rospy.init_node('my_service_server')
+            
+        self.rr_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #AF_INET for IPv4 SOCK_STREAM for TCP
+        self.rr_socket.bind((self.host, self.remote_request_port))
+        self.rr_socket.listen(1)
+
+        print("Server is listening on {}:{}".format(self.host, self.remote_request_port))
+
+
+        while True:  # Outer loop to keep accepting new client connections
+            conn, addr = self.rr_socket.accept()
+            print("Connected by", addr)
+            
+            while True:  # Inner loop to handle communication with the current client
+                data = conn.recv(1024).decode()
+                if not data:
+                    break  # Exit the inner loop when the client disconnects
+                print("Client: " + data)
+                message = "Requête invalide"
+                if data == "OBSF":
+                    message = str(self.obstacle)
+                    print("Message sent : {}".format(self.obstacle))
+                elif data == "RPOS":
+                    message = str(self.pos)
+                    print("Message sent : {}".format(self.pos))
+                elif data == "RBID":
+                    message = str(self.id)
+                    print("Message sent : {}".format(self.id))
+                conn.sendall(message.encode())
+            conn.close()  # Close the connection with the current client
+            
+        """rospy.init_node('my_service_server')
         s = rospy.Service('add_numbers', MyService, handle_request)
         print("ros_monitor started.")
         rospy.spin()
 
         while True:
-            pass
+            pass"""
+
+    def pack_data(self):
+        data_format = "fffI"
+        data = pack(data_format, self.pos[0], self.pos[1], self.pos[2], self.id)
+        print("Packed data: ", data)
+        return data
 
     def pb_loop(self):
         self.pb_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -76,8 +109,6 @@ class ROSMonitor:
             self.pb_socket.sendto(data, ('<broadcast>', self.pos_broadcast_port))
             time.sleep(1)
 
-
-
 def quaternion_to_yaw(quat):
     (roll, pitch, yaw) = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
     return yaw        
@@ -85,52 +116,12 @@ def quaternion_to_yaw(quat):
 def handle_request(req):
     result = req.a + req.b
     return MyServiceResponse(result)
+
+"""if __name__ == "__main__":
+    rr_loop()"""
     
-def rr_loop(self):
-    # Init your socket here :
-    # self.rr_socket = socket.Socket(...)
-        
-    self.rr_socket = socket.Socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((HOST, PORT))
-    s.listen(4)
-
-    print("Server is listening on {}:{}".format(HOST, PORT))
-
- 
-
-    conn, addr = s.accept()
-    print("Connected by", addr)
-
- 
-
-    while True:
-        data = conn.recv(1024).decode()
-        if not data:
-            break
-        print("Client: " + data)
-        message = input("Server > ")
-        conn.sendall(message.encode())
-
-    conn.close()
-        
-    rospy.init_node('my_service_server')
-    s = rospy.Service('add_numbers', MyService, handle_request)
-    print("ros_monitor started.")
-    rospy.spin()
-
-
-
-    
-
-if __name__ == "__main__":
+if __name__=="__main__":
     rospy.init_node("ros_monitor")
-
     node = ROSMonitor()
-
+    node.rr_thread.start()
     rospy.spin()
-    
-#if __name__=="__main__":
-#
- #   rospy.init_node("ros_monitor")
-  #  node = ROSMonitor()
-   # rospy.spin()
