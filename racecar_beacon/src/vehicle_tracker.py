@@ -8,29 +8,45 @@ HOST = '127.0.0.1'
 # This process should listen to a different port than the RemoteRequest client.
 PORT = 65431
 
-message_format = struct.Struct('fffI')
+class VehiculeTracker:
+    def __init__(self):
+        print("Vehicle_Tracker")
 
-# Create a UDP socket for listening
-listen_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # Unpacking Data:
+    def Unpack():
+        # Create a socket object
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Bind the socket to a specific address and port to listen for incoming messages
-listen_address = ('', PORT)  # Use an empty string for the host to bind to all available network interfaces
-listen_socket.bind(listen_address)
+        # Bind the socket to the local host and port
+        client_socket.bind(('localhost', PORT))  # You can bind to '0.0.0.0' to listen on all available interfaces
 
-def unpack_data(data):
-    data_format = "fffI"
-    unpacked_data = message_format.unpack(data)
-    return unpacked_data
+        # Listen for incoming connections
+        client_socket.listen(1)  # Allow one connection at a time
 
-def listen_for_messages():
-    listen_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    listen_socket.bind(('', PORT))
-    while True:
-        data, addr = listen_socket.recvfrom(1024)
-        unpacked_data = unpack_data(data)
-        print(f"Received data from {addr}: {unpacked_data}")
+        # Receive Data
+        data, addr = client_socket.recvfrom(1024)  # Adjust buffer size as needed
+        
+        # Unpack Data
+        vehicle_id, x, y, theta = struct.unpack('fffI', data)
+        
+        # Debug
+        print("(X, Y, Theta, ID): {:.2f}, {:.2f}, {:.2f}, {:.0f}".format(x, y, theta, vehicle_id))
 
-my_thread = threading.Thread(target=listen_for_messages)
-
-# Start the thread
-my_thread.start()
+if __name__ == "__main__":
+    rospy.init_node("Vehicle_Tracker")
+    node = VehiculeTracker()
+    rospy.spin()
+    
+    # Create an instance of VehiculeTracker
+    tracker_instance = VehiculeTracker()
+    
+    # Call the Unpack method on the instance
+    tracker_instance.Unpack()
+    
+    
+    
+    
+    
+    
+    
+    
