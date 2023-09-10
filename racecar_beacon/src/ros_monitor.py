@@ -39,6 +39,37 @@ class ROSMonitor:
         yaw = quaternion_to_yaw(self.orientation)
         # Print the extracted information
         print("Position (X, Y, Theta): {:.2f}, {:.2f}, {:.2f}".format(self.position.x, self.position.y, yaw))
+    
+    def rr_loop(self):
+        # Init your socket here :
+        # self.rr_socket = socket.Socket(...)
+            
+        self.rr_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #AF_INET for IPv4 SOCK_STREAM for TCP
+        self.rr_socket.bind((self.host, self.remote_request_port))
+        self.rr_socket.listen(1)
+
+        print("Server is listening on {}:{}".format(self.host, self.remote_request_port))
+
+        conn, addr = self.rr_socket.accept()
+        print("Connected by", addr)
+
+        while True:
+            data = conn.recv(1024).decode()
+            if not data:
+                break
+            print("Client: " + data)
+            message = input("Server > ")
+            conn.sendall(message.encode())
+
+        conn.close()
+            
+        """rospy.init_node('my_service_server')
+        s = rospy.Service('add_numbers', MyService, handle_request)
+        print("ros_monitor started.")
+        rospy.spin()
+
+        while True:
+            pass"""
 
 
 def quaternion_to_yaw(quat):
@@ -51,41 +82,6 @@ def quaternion_to_yaw(quat):
 def handle_request(req):
     result = req.a + req.b
     return MyServiceResponse(result)
-    
-def rr_loop(self):
-    # Init your socket here :
-    # self.rr_socket = socket.Socket(...)
-        
-    self.rr_socket = socket.Socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((HOST, PORT))
-    s.listen(4)
-
-    print("Server is listening on {}:{}".format(HOST, PORT))
-
- 
-
-    conn, addr = s.accept()
-    print("Connected by", addr)
-
- 
-
-    while True:
-        data = conn.recv(1024).decode()
-        if not data:
-            break
-        print("Client: " + data)
-        message = input("Server > ")
-        conn.sendall(message.encode())
-
-    conn.close()
-        
-    rospy.init_node('my_service_server')
-    s = rospy.Service('add_numbers', MyService, handle_request)
-    print("ros_monitor started.")
-    rospy.spin()
-
-    while True:
-        pass
 
 def pb_loop(self):
     
@@ -94,11 +90,11 @@ def pb_loop(self):
     return
     
 
-if __name__ == "__main__":
-    rr_loop()
+"""if __name__ == "__main__":
+    rr_loop()"""
     
-#if __name__=="__main__":
-#
- #   rospy.init_node("ros_monitor")
-  #  node = ROSMonitor()
-   # rospy.spin()
+if __name__=="__main__":
+    rospy.init_node("ros_monitor")
+    node = ROSMonitor()
+    node.rr_thread.start()
+    rospy.spin()

@@ -1,7 +1,33 @@
 #!/usr/bin/env python
 
 import rospy
+import socket
 from racecar_beacon.srv import MyService, MyServiceRequest
+
+HOST = '127.0.0.1'
+# This process should listen to a different port than the PositionBroadcast client.
+PORT = 65432
+
+def remote_client():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #AF_INET for IPv4 SOCK_STREAM for TCP
+    s.connect((HOST, PORT))
+
+    print("Connected to server")
+
+    while True:
+        message = input("Client > ")
+        s.sendall(message.encode())
+        data = s.recv(1024).decode()
+        print("Server: " + data)
+
+    s.close()
+
+if __name__ == '__main__':
+    remote_client()
+
+    """rospy.init_node('my_service_client')
+    result = client()
+    rospy.loginfo(f"Result: {result}")"""
 
 def client():
     rospy.wait_for_service('add_numbers')
@@ -17,35 +43,3 @@ def client():
         return response.result
     except rospy.ServiceException as e:
         rospy.logerr(f"Service call failed: {e}")
-
-if __name__ == '__main__':
-    rospy.init_node('my_service_client')
-    result = client()
-    rospy.loginfo(f"Result: {result}")
-
-"""#!/usr/bin/env python
-
-import socket
-
-HOST = '127.0.0.1'
-# This process should listen to a different port than the PositionBroadcast client.
-PORT = 65432
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((HOST, PORT))
-
- 
-
-print("Connected to server")
-
- 
-
-while True:
-    message = input("Client > ")
-    s.sendall(message.encode())
-    data = s.recv(1024).decode()
-    print("Server: " + data)
-
- 
-
-s.close()"""
