@@ -18,7 +18,7 @@ class ROSMonitor:
         
         # Current robot state:
         self.id = 10
-        self.pos = (0,0,0) # x, y, theta
+        self.pos = [0,0,0] # x, y, theta
         self.obstacle = False
         
         # Params :
@@ -45,9 +45,9 @@ class ROSMonitor:
     def odo_update(self, odo_msg):
         # Extract the position and orientation from the Odometry message
         self.pos[0] = odo_msg.pose.pose.position.x
-        self.pos[1] = odo_msg.pose.pose.position.y  
+        self.pos[1] = odo_msg.pose.pose.position.y 
         self.pos[2] = quaternion_to_yaw(odo_msg.pose.pose.orientation)
-        print("Position (X, Y, Theta): {:.2f}, {:.2f}, {:.2f}".format(self.position.x, self.position.y, yaw))
+        #print("Position (X, Y, Theta): {:.2f}, {:.2f}, {:.2f}".format(self.position.x, self.position.y, yaw))
 
     def pack_data(self):
         data_format = "fffI"
