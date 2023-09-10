@@ -89,9 +89,9 @@ def rr_loop(self):
     conn.close()
         
     rospy.init_node('my_service_server')
-        s = rospy.Service('add_numbers', MyService, handle_request)
-        print("ros_monitor started.")
-        rospy.spin()
+    s = rospy.Service('add_numbers', MyService, handle_request)
+    print("ros_monitor started.")
+    rospy.spin()
 
     while True:
         pass
