@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import socket
-import rospy
+import threading
 import struct
 
 HOST = '127.0.0.1'
@@ -32,11 +32,16 @@ class VehiculeTracker:
         # Debug
         print("(X, Y, Theta, ID): {:.2f}, {:.2f}, {:.2f}, {:.0f}".format(x, y, theta, vehicle_id))
 
-
 if __name__ == "__main__":
     rospy.init_node("Vehicle_Tracker")
     node = VehiculeTracker()
     rospy.spin()
+    
+    # Create an instance of VehiculeTracker
+    tracker_instance = VehiculeTracker()
+    
+    # Call the Unpack method on the instance
+    tracker_instance.Unpack()
     
     
     
