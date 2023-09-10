@@ -17,7 +17,7 @@ class ROSMonitor:
         self.sub_odo = rospy.Subscriber("/odometry/filtered", Odometry, self.odo_update)
         
         # Current robot state:
-        self.id = 0xFFFF
+        self.id = 10
         self.pos = (0,0,0) # x, y, theta
         self.obstacle = False
         
@@ -32,8 +32,15 @@ class ROSMonitor:
         print("ROSMonitor started.")
 
     def scan_update(self, msg):
-        ranges = msg
-        print("Got msg from /scan: ", ranges)
+        # Set to Initial value
+        self.obstacle = False
+        # Aquire the message
+        ranges = msg.ranges
+        # If something is at less than 1.0m, set obstacle to true
+        for value in ranges:
+            if value <= 1.0: self.obstacle = False
+        # Debug
+        print("Got msg from /scan: ", self.obstacle)
 
     def odo_update(self, odo_msg):
         # Extract the position and orientation from the Odometry message
