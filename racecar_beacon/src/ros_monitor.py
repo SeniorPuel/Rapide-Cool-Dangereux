@@ -59,18 +59,28 @@ class ROSMonitor:
 
         print("Server is listening on {}:{}".format(self.host, self.remote_request_port))
 
-        conn, addr = self.rr_socket.accept()
-        print("Connected by", addr)
 
-        while True:
-            data = conn.recv(1024).decode()
-            if not data:
-                break
-            print("Client: " + data)
-            message = input("Server > ")
-            conn.sendall(message.encode())
-
-        conn.close()
+        while True:  # Outer loop to keep accepting new client connections
+            conn, addr = self.rr_socket.accept()
+            print("Connected by", addr)
+            
+            while True:  # Inner loop to handle communication with the current client
+                data = conn.recv(1024).decode()
+                if not data:
+                    break  # Exit the inner loop when the client disconnects
+                print("Client: " + data)
+                message = "Requête invalide"
+                if data == "OBSF":
+                    message = str(self.obstacle)
+                    print("Message sent : {}".format(self.obstacle))
+                elif data == "RPOS":
+                    message = str(self.pos)
+                    print("Message sent : {}".format(self.pos))
+                elif data == "RBID":
+                    message = str(self.id)
+                    print("Message sent : {}".format(self.id))
+                conn.sendall(message.encode())
+            conn.close()  # Close the connection with the current client
             
         """rospy.init_node('my_service_server')
         s = rospy.Service('add_numbers', MyService, handle_request)
