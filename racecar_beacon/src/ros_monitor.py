@@ -2,8 +2,6 @@
 
 import rospy
 
-import rospy
-
 import socket
 
 import threading
@@ -16,18 +14,6 @@ from sensor_msgs.msg import LaserScan
 from tf.transformations import euler_from_quaternion
 
 from racecar_beacon.srv import MyService, MyServiceResponse
- 
-def quaternion_to_yaw(quat):
-
-    # Uses TF transforms to convert a quaternion to a rotation angle around Z.
-
-    # Usage with an Odometry message:
-
-    #   yaw = quaternion_to_yaw(msg.pose.pose.orientation)
-
-    (roll, pitch, yaw) = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
-
-    return yaw
 
 class ROSMonitor:
 
@@ -91,57 +77,39 @@ class ROSMonitor:
 
         print("Position (X, Y, Theta): {:.2f}, {:.2f}, {:.2f}".format(self.position.x, self.position.y, yaw))
 
+def quaternion_to_yaw(quat):
+
+    # Uses TF transforms to convert a quaternion to a rotation angle around Z.
+
+    # Usage with an Odometry message:
+
+    #   yaw = quaternion_to_yaw(msg.pose.pose.orientation)
+
+    (roll, pitch, yaw) = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
+
+    return yaw
+
 def handle_request(req):
     result = req.a + req.b
     return MyServiceResponse(result)
-
-def server():
-    rospy.init_node('my_service_server')
+    
+def rr_loop(self):
+        # Init your socket here :
+        # self.rr_socket = socket.Socket(...)
+        
+        rospy.init_node('my_service_server')
     s = rospy.Service('add_numbers', MyService, handle_request)
     print("ros_monitor started.")
     rospy.spin()
+    
+        while True:
+            pass
 
 if __name__ == "__main__":
-    server()
+    rr_loop()
     
 #if __name__=="__main__":
 #
  #   rospy.init_node("ros_monitor")
   #  node = ROSMonitor()
    # rospy.spin()
-
-"""def rr_loop(self):
-
-        # Initialize your socket for remote requests here:
-
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as rr_socket:
-
-            # Bind the socket to the specified port
-
-            rr_socket.bind((HOST, self.remote_request_port))
-
-            rr_socket.listen()
-
- 
-
-            print("RemoteRequest server is listening on port {}".format(self.remote_request_port))
-
- 
-
-            while True:
-
-                conn, addr = rr_socket.accept()
-
-                print("Accepted connection from", addr)
-
- 
-
-                # Handle remote requests here
-
-                # Example: Send robot's current position upon request
-
-                response = "Current Position: {}".format(self.position)
-
-                conn.sendall(response.encode())
-
-                conn.close()"""
