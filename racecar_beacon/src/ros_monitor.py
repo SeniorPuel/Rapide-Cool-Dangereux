@@ -14,7 +14,7 @@ class ROSMonitor:
         self.sub_laser = rospy.Subscriber("/scan", LaserScan, self.scan_update)
         self.sub_odo = rospy.Subscriber("/odometry/filtered", Odometry, self.odo_update)
         # Current robot state:
-        self.id = 0xFFFF
+        self.id = 10
         self.pos = (0,0,0)
         self.obstacle = False
         # Params :
@@ -26,8 +26,15 @@ class ROSMonitor:
         print("ROSMonitor started.")
 
     def scan_update(self, msg):
-        ranges = msg
-        print("Got msg from /scan: ", ranges)
+        # Set to Initial value
+        self.obstacle = False
+        # Aquire the message
+        ranges = msg.ranges
+        # If something is at less than 1.0m, set obstacle to true
+        for value in ranges:
+            if value <= 1.0: self.obstacle = False
+        # Debug
+        print("Got msg from /scan: ", self.obstacle)
 
     def odo_update(self, odo_msg):
         # Extract the position and orientation from the Odometry message
@@ -35,7 +42,9 @@ class ROSMonitor:
         self.orientation = odo_msg.pose.pose.orientation
         # Convert the orientation quaternion to yaw
         yaw = quaternion_to_yaw(self.orientation)
-        # Print the extracted information
+        # Put in the variable
+        self.pos = (self.position, self.orientation, yaw)
+        # Debug
         print("Position (X, Y, Theta): {:.2f}, {:.2f}, {:.2f}".format(self.position.x, self.position.y, yaw))
 
 
@@ -55,9 +64,9 @@ def rr_loop(self):
         # self.rr_socket = socket.Socket(...)
         
         rospy.init_node('my_service_server')
-    s = rospy.Service('add_numbers', MyService, handle_request)
-    print("ros_monitor started.")
-    rospy.spin()
+        s = rospy.Service('add_numbers', MyService, handle_request)
+        print("ros_monitor started.")
+        rospy.spin()
     
         while True:
             pass
