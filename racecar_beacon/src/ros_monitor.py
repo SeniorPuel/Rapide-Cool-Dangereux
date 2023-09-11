@@ -24,6 +24,10 @@ class ROSMonitor:
         # Params :
         self.remote_request_port = rospy.get_param("remote_request_port", 65432)
         self.pos_broadcast_port  = rospy.get_param("pos_broadcast_port", 65431)
+        self.client_IP = '10.0.1.21'
+        #self.client_IP = '127.0.0.1'
+        self.broadcast_IP = '10.0.1.255'
+        #self.broadcast_IP = '127.0.0.1'
         # Thread for RemoteRequest handling:
         self.rr_thread = threading.Thread(target=self.rr_loop)
         self.pb_thread = threading.Thread(target=self.pb_loop)
@@ -62,10 +66,10 @@ class ROSMonitor:
         # self.rr_socket = socket.Socket(...)
             
         self.rr_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #AF_INET for IPv4 SOCK_STREAM for TCP
-        self.rr_socket.bind(('127.0.0.1', self.remote_request_port))
+        self.rr_socket.bind((self.client_IP, self.remote_request_port))
         self.rr_socket.listen(1)
 
-        print("Remote request is listening on {}:{}".format('127.0.0.1', self.remote_request_port))
+        print("Remote request is listening on {}:{}".format(self.client_IP, self.remote_request_port))
 
         while True:  
             conn, addr = self.rr_socket.accept()
@@ -98,19 +102,18 @@ class ROSMonitor:
 
     def pb_loop(self):
         self.pb_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.pb_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         #self.pb_socket.bind(('127.0.0.1', self.pos_broadcast_port))
         #self.pb_socket.bind(('broadcast', self.pos_broadcast_port))
         
-        print("Position broadcast is broadcasting on {}:{}".format('127.0.0.1', self.pos_broadcast_port))
+        print("Position broadcast is broadcasting on {}:{}".format(self.broadcast_IP, self.pos_broadcast_port))
         
-        destination_address = ('127.0.0.1', self.pos_broadcast_port)
+        destination_address = (self.broadcast_IP, self.pos_broadcast_port)
         
         while True:
             data = self.pack_data()
             self.pb_socket.sendto(data, destination_address)
             time.sleep(1)
-        
-        #self.pb_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
 def quaternion_to_yaw(quat):
     (roll, pitch, yaw) = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])

@@ -5,6 +5,7 @@ import socket
 from racecar_beacon.srv import MyService, MyServiceRequest
 
 HOST = '127.0.0.1'
+HOST = '10.0.1.21'
 # This process should listen to a different port than the PositionBroadcast client.
 PORT = 65432
 
