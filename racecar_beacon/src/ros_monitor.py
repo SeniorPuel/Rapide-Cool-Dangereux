@@ -103,15 +103,14 @@ class ROSMonitor:
         
         print("Position broadcast is broadcasting on {}:{}".format('127.0.0.1', self.pos_broadcast_port))
         
-        self.pb_socket.sendto('Message from server'.encode(), '127.0.0.1', self.pos_broadcast_port)
+        destination_address = ('127.0.0.1', self.pos_broadcast_port)
         
-        """
-        #self.pb_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-
         while True:
             data = self.pack_data()
-            self.pb_socket.sendto(data, ('<broadcast>', self.pos_broadcast_port))
-            time.sleep(1)"""
+            self.pb_socket.sendto(data, destination_address)
+            time.sleep(1)
+        
+        #self.pb_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
 def quaternion_to_yaw(quat):
     (roll, pitch, yaw) = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
@@ -120,9 +119,6 @@ def quaternion_to_yaw(quat):
 def handle_request(req):
     result = req.a + req.b
     return MyServiceResponse(result)
-
-"""if __name__ == "__main__":
-    rr_loop()"""
     
 if __name__=="__main__":
     rospy.init_node("ros_monitor")

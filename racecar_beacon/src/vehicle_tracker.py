@@ -11,25 +11,21 @@ client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 client_socket.bind(('0.0.0.0', PORT))
 
 print("Client listening on¸{}".format(PORT)) 
-
+    
 while True:
-    data, addr = client_socket.recvfrom(1024) 
-    print("Received data from {}: {}".format(addr, data.decode()))
+    data, addr = client_socket.recvfrom(1024)
 
-"""client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Assuming the data format is "fffI", adjust it as needed
+    data_format = "fffI"
+    data_size = struct.calcsize(data_format)
 
-client_socket.bind(('0.0.0.0', PORT))  # You can bind to '0.0.0.0' to listen on all available interfaces
+    # Unpack the binary data into individual values
+    unpacked_data = struct.unpack(data_format, data)
 
-client_socket.listen(1)  # Allow one connection at a time
+    # Now you can work with the unpacked data
+    x, y, z, identifier = unpacked_data
 
-print("patate")
-data, addr = client_socket.recvfrom(1024)  # Adjust buffer size as needed
-print("carotte")
-print("Data : ", data)
-#x, y, theta, vehicle_id = struct.unpack('fffI', data)
-unpacked_data = struct.unpack('fffI', data)
-print("Unpacked data : ", unpacked_data)
-#print("(X, Y, Theta, ID): {:.2f}, {:.2f}, {:.2f}, {:.0f}".format(x, y, theta, vehicle_id))"""
+    print("Received data from {}: x={}, y={}, z={}, id={}".format(addr, x, y, z, identifier))
     
     
     
