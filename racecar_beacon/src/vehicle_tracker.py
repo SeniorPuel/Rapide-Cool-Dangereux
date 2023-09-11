@@ -5,19 +5,15 @@ import threading
 import struct
 import rospy
 
-HOST = '127.0.0.1'
-# This process should listen to a different port than the RemoteRequest client.
 PORT = 65431
 
-# Create a UDP socket
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+client_socket.bind(('0.0.0.0', PORT))
 
-# Bind the socket to a specific port
-client_socket.bind(('0.0.0.0', PORT))  # Replace 12345 with the desired port
+print("Client listening on¸{}".format(PORT)) 
 
-# Listen for incoming packets
 while True:
-    data, addr = client_socket.recvfrom(1024)  # Adjust buffer size as needed
+    data, addr = client_socket.recvfrom(1024) 
     print("Received data from {}: {}".format(addr, data.decode()))
 
 """client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

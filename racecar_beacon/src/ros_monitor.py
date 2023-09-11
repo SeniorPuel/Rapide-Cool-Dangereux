@@ -23,9 +23,7 @@ class ROSMonitor:
         
         # Params :
         self.remote_request_port = rospy.get_param("remote_request_port", 65432)
-        #self.pos_broadcast_port  = rospy.get_param("pos_broadcast_port", 65431)
-        self.pos_broadcast_port = 65431
-        self.host = '127.0.0.1'
+        self.pos_broadcast_port  = rospy.get_param("pos_broadcast_port", 65431)
         # Thread for RemoteRequest handling:
         self.rr_thread = threading.Thread(target=self.rr_loop)
         self.pb_thread = threading.Thread(target=self.pb_loop)
@@ -64,20 +62,19 @@ class ROSMonitor:
         # self.rr_socket = socket.Socket(...)
             
         self.rr_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #AF_INET for IPv4 SOCK_STREAM for TCP
-        self.rr_socket.bind((self.host, self.remote_request_port))
+        self.rr_socket.bind(('127.0.0.1', self.remote_request_port))
         self.rr_socket.listen(1)
 
-        print("Server is listening on {}:{}".format(self.host, self.remote_request_port))
+        print("Remote request is listening on {}:{}".format('127.0.0.1', self.remote_request_port))
 
-
-        while True:  # Outer loop to keep accepting new client connections
+        while True:  
             conn, addr = self.rr_socket.accept()
             print("Connected by", addr)
             
-            while True:  # Inner loop to handle communication with the current client
+            while True:  
                 data = conn.recv(1024).decode()
                 if not data:
-                    break  # Exit the inner loop when the client disconnects
+                    break 
                 print("Client: " + data)
                 message = "Requête invalide"
                 if data == "OBSF":
@@ -90,15 +87,8 @@ class ROSMonitor:
                     message = str(self.id)
                     print("Message sent : {}".format(self.id))
                 conn.sendall(message.encode())
-            conn.close()  # Close the connection with the current client
-            
-        """rospy.init_node('my_service_server')
-        s = rospy.Service('add_numbers', MyService, handle_request)
-        print("ros_monitor started.")
-        rospy.spin()
-
-        while True:
-            pass"""
+            conn.close()  
+         
 
     def pack_data(self):
         data_format = "fffI"
@@ -108,13 +98,14 @@ class ROSMonitor:
 
     def pb_loop(self):
         self.pb_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-        # Send data to the client's broadcast or multicast address and port
-        client_broadcast_address = ('<broadcast>', 65431)  # Replace with client's broadcast address or multicast group
-        self.pb_socket.sendto(b'Message from server', client_broadcast_address)
+        #self.pb_socket.bind(('127.0.0.1', self.pos_broadcast_port))
+        #self.pb_socket.bind(('broadcast', self.pos_broadcast_port))
+        
+        print("Position broadcast is broadcasting on {}:{}".format('127.0.0.1', self.pos_broadcast_port))
+        
+        self.pb_socket.sendto('Message from server'.encode(), '127.0.0.1', self.pos_broadcast_port)
         
         """
-        client_socket.bind(('0.0.0.0', self.pos_broadcast_port))  # Replace 12345 with the desired port
         #self.pb_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
         while True:
