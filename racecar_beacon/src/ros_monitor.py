@@ -41,7 +41,7 @@ class ROSMonitor:
         ranges = msg.ranges
         # If something is at less than 1.0m, set obstacle to true
         for value in ranges:
-            if value <= 1.0: self.obstacle = False
+            if value <= 1.0: self.obstacle = True
 
         # Debug
         #print("Got msg from /scan: ", self.obstacle)
