@@ -39,8 +39,23 @@ class teleop(object):
         propulsion_user_input = joy_msg.axes[4 if self.ps4 else 3]    # Up-down Right joystick 
         steering_user_input   = joy_msg.axes[0]    # Left-right left joystick
         
-        self.cmd_msg = Twist()             
-                
+        self.cmd_msg = Twist()     
+
+        # Check if MODE1 is active
+        if self.mode1_active:
+            # Mode 1: Constant voltage
+            voltage_value = 5.0  # Set your desired voltage value here
+            cmd_msg.linear.x = voltage_value
+            cmd_msg.linear.z = 9  # Set a unique identifier for MODE1
+        
+    # Check if MODE2 is active
+        elif self.mode2_active:
+            # Mode 2: Constant voltage (different value)
+            voltage_value = 2.0  # Set your desired voltage value here
+            cmd_msg.linear.x = voltage_value
+            cmd_msg.linear.z = 10  # Set a unique identifier for MODE2
+        
+        
         # Software deadman switch
         #If left button is active 
         if (joy_msg.buttons[4]):
@@ -108,7 +123,21 @@ class teleop(object):
                 self.cmd_msg.linear.x  = 0
                 self.cmd_msg.angular.z = 0
                 self.cmd_msg.linear.z  = 8 # Control mode
-
+            
+           # Check if MODE1 is active
+            elif (joy_msg.axes[10]):
+                # Mode 1: Constant voltage
+                self.cmd_msg.linear.x  = 3
+                self.cmd_msg.angular.z = 0
+                self.cmd_msg.linear.z  = 9 # Control mode
+            
+            # Check if MODE2 is active
+            elif (joy_msg.axes[11]):
+                # Mode 2: Constant voltage (different value)
+                self.cmd_msg.linear.x  = 8.4
+                self.cmd_msg.angular.z = 0
+                self.cmd_msg.linear.z  = 10 # Control mode
+            
             # Defaults operation
             # No active button
             else:

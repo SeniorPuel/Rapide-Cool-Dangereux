@@ -157,6 +157,17 @@ class slash_controller(object):
                 self.steering_cmd   = 0 + self.steering_offset
                 self.propulsion_cmd = 0    
                 self.arduino_mode   = 0 # Mode ??? on arduino
+                
+            elif ( self.high_level_mode == 9 ):
+                self.propulsion_cmd = self.custom_mode1_cmd  # Utilisez la commande spécifique au mode 1
+                self.arduino_mode = 9  # Identifiant unique pour le mode personnalisé 1
+                self.steering_cmd = 0  # Commande de direction (personnalisée ou non)
+                
+            elif ( self.high_level_mode == 10 ):
+                self.propulsion_cmd = self.custom_mode2_cmd  # Utilisez la commande spécifique au mode 2
+                self.arduino_mode = 10  # Identifiant unique pour le mode personnalisé 2
+                self.steering_cmd = 0  # Commande de direction (personnalisée ou non)
+    
         
         self.send_arduino()
 
