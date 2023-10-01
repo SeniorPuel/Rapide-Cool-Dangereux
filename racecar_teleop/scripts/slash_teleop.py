@@ -3,6 +3,7 @@ import rospy
 import numpy as np
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float32
 
 
 #########################################
@@ -12,6 +13,7 @@ class teleop(object):
     """
     def __init__(self):
         self.pub_cmd   = rospy.Publisher("ctl_ref", Twist , queue_size=1  ) 
+        self.pub_voltage = rospy.Publisher("voltage_values", Float32 , queue_size=1  )
 
         self.max_vel  = rospy.get_param('~max_vel',   4.0) # Max linear velocity (m/s)
         self.max_volt = rospy.get_param('~max_volt',  8.0)   # Max voltage is set at 8 volts   
@@ -39,8 +41,27 @@ class teleop(object):
         propulsion_user_input = joy_msg.axes[4 if self.ps4 else 3]    # Up-down Right joystick 
         steering_user_input   = joy_msg.axes[0]    # Left-right left joystick
         
-        self.cmd_msg = Twist()             
-                
+        self.cmd_msg = Twist()     
+
+        # Check if MODE1 is active
+        if self.mode1_active:
+            cmd_msg.linear.z = 9  # Set a unique identifier for MODE1
+            # Mode 1: Test mode
+            for i in np.arange(2.0, 8.0, 0.1):
+                rospy.logwarn("Testing voltage value: %f", i)
+                voltage_value = i  # Set your desired voltage value here
+                cmd_msg.linear.x = voltage_value
+
+                self.pub_voltage.publish(Float32(voltage_value))
+        
+    # Check if MODE2 is active
+        elif self.mode2_active:
+            # Mode 2: Constant voltage (different value)
+            voltage_value = 2.0  # Set your desired voltage value here
+            cmd_msg.linear.x = voltage_value
+            cmd_msg.linear.z = 10  # Set a unique identifier for MODE2
+        
+        
         # Software deadman switch
         #If left button is active 
         if (joy_msg.buttons[4]):

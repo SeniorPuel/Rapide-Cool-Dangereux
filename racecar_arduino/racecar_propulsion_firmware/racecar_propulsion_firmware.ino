@@ -321,11 +321,10 @@ void ctl(){
   
   // Velocity computation
 
-   //1st order low-pass filter
+  //1st order low-pass filter
   float vel_raw = (enc_now - enc_old) * tick2m / time_period_low * 1000;
-  float alpha   = filter_rc; 
-  //float vel_fil = (1 - alpha) * vel_fil + alpha * vel_raw;
-  float vel_fil = alpha * vel_raw;
+  float alpha   = 0.1; 
+  float vel_fil = (1 - alpha) * vel_fil + alpha * vel_raw;
   
   // Propulsion Controllers
   
