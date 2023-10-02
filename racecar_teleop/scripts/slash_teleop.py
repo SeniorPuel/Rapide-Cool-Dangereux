@@ -3,7 +3,6 @@ import rospy
 import numpy as np
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Float32
 
 
 #########################################
@@ -13,7 +12,6 @@ class teleop(object):
     """
     def __init__(self):
         self.pub_cmd   = rospy.Publisher("ctl_ref", Twist , queue_size=1  ) 
-        self.pub_voltage = rospy.Publisher("voltage_values", Float32 , queue_size=1  )
 
         self.max_vel  = rospy.get_param('~max_vel',   4.0) # Max linear velocity (m/s)
         self.max_volt = rospy.get_param('~max_volt',  8.0)   # Max voltage is set at 8 volts   
@@ -45,14 +43,10 @@ class teleop(object):
 
         # Check if MODE1 is active
         if self.mode1_active:
+            # Mode 1: Constant voltage
+            voltage_value = 5.0  # Set your desired voltage value here
+            cmd_msg.linear.x = voltage_value
             cmd_msg.linear.z = 9  # Set a unique identifier for MODE1
-            # Mode 1: Test mode
-            for i in np.arange(2.0, 8.0, 0.1):
-                rospy.logwarn("Testing voltage value: %f", i)
-                voltage_value = i  # Set your desired voltage value here
-                cmd_msg.linear.x = voltage_value
-
-                self.pub_voltage.publish(Float32(voltage_value))
         
     # Check if MODE2 is active
         elif self.mode2_active:
@@ -129,7 +123,21 @@ class teleop(object):
                 self.cmd_msg.linear.x  = 0
                 self.cmd_msg.angular.z = 0
                 self.cmd_msg.linear.z  = 8 # Control mode
-
+            
+           # Check if MODE1 is active
+            elif (joy_msg.axes[10]):
+                # Mode 1: Constant voltage
+                self.cmd_msg.linear.x  = 3
+                self.cmd_msg.angular.z = 0
+                self.cmd_msg.linear.z  = 9 # Control mode
+            
+            # Check if MODE2 is active
+            elif (joy_msg.axes[11]):
+                # Mode 2: Constant voltage (different value)
+                self.cmd_msg.linear.x  = 8.4
+                self.cmd_msg.angular.z = 0
+                self.cmd_msg.linear.z  = 10 # Control mode
+            
             # Defaults operation
             # No active button
             else:
