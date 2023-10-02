@@ -62,7 +62,7 @@ const int dri_dir_pin     = 42; //
 const float filter_rc  =  0.1;
 const float vel_kp     =  10.0; 
 const float vel_ki     =  0.0; 
-const float vel_kd     =  0.0;
+const float vel_kd     =  0.0;	
 const float pos_kp     =  1.0; 
 const float pos_kd     =  0.0;
 const float pos_ki     =  0.0; 
@@ -113,8 +113,10 @@ float pos_now   = 0;
 float vel_now   = 0;
 float vel_old   = 0;
 
-float vel_error_int = 0 ;
+float vel_error_int = 0;
 float pos_error_int = 0;
+float vel_error_old = 0;
+float pos_error_old = 0;
 
 // Loop timing
 unsigned long time_now       = 0;
@@ -319,10 +321,11 @@ void ctl(){
   
   // Velocity computation
 
-  //TODO: VOUS DEVEZ COMPLETEZ LA DERIVEE FILTRE ICI
+   //1st order low-pass filter
   float vel_raw = (enc_now - enc_old) * tick2m / time_period_low * 1000;
-  float alpha   = 0; // TODO
-  float vel_fil = vel_raw;    // Filter TODO
+  float alpha   = filter_rc; 
+  //float vel_fil = (1 - alpha) * vel_fil + alpha * vel_raw;
+  float vel_fil = alpha * vel_raw;
   
   // Propulsion Controllers
   
@@ -333,7 +336,10 @@ void ctl(){
     
     // reset integral actions
     vel_error_int = 0;
-    pos_error_int = 0 ;
+    pos_error_int = 0;
+    vel_error_old = 0;
+    pos_error_old = 0;
+    millis_old = 0:
     
   }
   //////////////////////////////////////////////////////
@@ -345,7 +351,10 @@ void ctl(){
     
     // reset integral actions
     vel_error_int = 0;
-    pos_error_int = 0 ;
+    pos_error_int = 0;
+    vel_error_old = 0;
+    pos_error_old = 0;
+    millis_old = 0:
   }
   //////////////////////////////////////////////////////
   else if (ctl_mode == 2 ){
@@ -355,10 +364,14 @@ void ctl(){
     float vel_ref, vel_error;
 
     //TODO: VOUS DEVEZ COMPLETEZ LE CONTROLLEUR SUIVANT
-    vel_ref       = dri_ref; 
-    vel_error     = vel_ref - vel_fil;
-    vel_error_int = 0; // TODO
-    dri_cmd       = vel_kp * vel_error; // proportionnal only
+    vel_ref = dri_ref; 
+    vel_error = vel_ref - vel_fil;
+    vel_error_int += vel_error;
+    
+    dri_cmd = vel_kp * vel_error + vel_ki * vel_error_int + vel_kd * (vel_error - vel_error_old)
+    // dri_cmd       = vel_kp * vel_error; // proportionnal only
+    
+    vel_error_old = vel_error;
     
     dri_pwm    = cmd2pwm( dri_cmd ) ;
 
@@ -369,19 +382,24 @@ void ctl(){
     // Commands received in [m] setpoints
     
     float pos_ref, pos_error, pos_error_ddt;
+    long millis = millis();
+    time_elapsed = millis - millis_old;
 
     //TODO: VOUS DEVEZ COMPLETEZ LE CONTROLLEUR SUIVANT
     pos_ref       = dri_ref; 
-    pos_error     = 0; // TODO
-    pos_error_ddt = 0; // TODO
-    pos_error_int = 0; // TODO
+    pos_error     = pos_ref - pos_fil;
+    pos_error_ddt = (pos_error - pos_error_old) / time_elapsed;
+    pos_error_int += pos_error;
     
     // Anti wind-up
     if ( pos_error_int > pos_ei_sat ){
       pos_error_int = pos_ei_sat;
     }
     
-    dri_cmd = 0; // TODO
+    dri_cmd = dri_cmd = pos_kp * pos_error + pos_ki * pos_error_int + pos_kd * (pos_error - pos_error_old);
+    
+    pos_error_old = pos_error;
+    millis_old = millis;
     
     dri_pwm = cmd2pwm( dri_cmd ) ;
   }
@@ -394,6 +412,9 @@ void ctl(){
     // reset integral actions
     vel_error_int = 0 ;
     pos_error_int = 0 ;
+    vel_error_old = 0;
+    pos_error_old = 0;
+    millis_old = 0:
     
     dri_pwm    = pwm_zer_dri ;
   }
@@ -402,6 +423,9 @@ void ctl(){
     // reset integral actions
     vel_error_int = 0 ;
     pos_error_int = 0 ;
+    vel_error_old = 0;
+    pos_error_old = 0;
+    millis_old = 0:
     
     dri_pwm    = pwm_zer_dri ;
   }
@@ -413,6 +437,9 @@ void ctl(){
   //Update memory variable
   enc_old = enc_now;
   vel_old = vel_fil;
+  vel_error_old = 0;
+  pos_error_old = 0;
+  millis_old = 0:
 }
 
 
