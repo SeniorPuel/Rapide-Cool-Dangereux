@@ -106,6 +106,8 @@ int   dri_pwm = 0;
 float dri_cmd = 0;
 
 // Controller memory (differentiation, filters and integral actions)
+float vel_fil = 0;
+
 signed long enc_now   = 0;
 signed long enc_old   = 0;
 
@@ -324,8 +326,7 @@ void ctl(){
    //1st order low-pass filter
   float vel_raw = (enc_now - enc_old) * tick2m / time_period_low * 1000;
   float alpha   = filter_rc; 
-  //float vel_fil = (1 - alpha) * vel_fil + alpha * vel_raw;
-  float vel_fil = alpha * vel_raw;
+  vel_fil = (1 - alpha) * vel_fil + alpha * vel_raw;
   
   // Propulsion Controllers
   
@@ -339,7 +340,8 @@ void ctl(){
     pos_error_int = 0;
     vel_error_old = 0;
     pos_error_old = 0;
-    millis_old = 0:
+    millis_old = 0;
+    vel_fil = 0;
     
   }
   //////////////////////////////////////////////////////
@@ -354,7 +356,8 @@ void ctl(){
     pos_error_int = 0;
     vel_error_old = 0;
     pos_error_old = 0;
-    millis_old = 0:
+    millis_old = 0;
+    vel_fil = 0;
   }
   //////////////////////////////////////////////////////
   else if (ctl_mode == 2 ){
@@ -414,7 +417,8 @@ void ctl(){
     pos_error_int = 0 ;
     vel_error_old = 0;
     pos_error_old = 0;
-    millis_old = 0:
+    millis_old = 0;
+    vel_fil = 0;
     
     dri_pwm    = pwm_zer_dri ;
   }
@@ -425,7 +429,8 @@ void ctl(){
     pos_error_int = 0 ;
     vel_error_old = 0;
     pos_error_old = 0;
-    millis_old = 0:
+    millis_old = 0;
+    vel_fil = 0;
     
     dri_pwm    = pwm_zer_dri ;
   }
@@ -439,7 +444,8 @@ void ctl(){
   vel_old = vel_fil;
   vel_error_old = 0;
   pos_error_old = 0;
-  millis_old = 0:
+  millis_old = 0;
+  vel_fil = 0;
 }
 
 
