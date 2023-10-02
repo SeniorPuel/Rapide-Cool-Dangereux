@@ -107,6 +107,7 @@ float dri_cmd = 0;
 
 // Controller memory (differentiation, filters and integral actions)
 float vel_fil = 0;
+float millis_old = 0;
 
 signed long enc_now   = 0;
 signed long enc_old   = 0;
@@ -323,11 +324,7 @@ void ctl(){
   
   // Velocity computation
 
-<<<<<<< HEAD
    //1st order low-pass filter
-=======
-  //1st order low-pass filter
->>>>>>> 436ebf6dbcd8fb5aab732217faf53d18eccd8efd
   float vel_raw = (enc_now - enc_old) * tick2m / time_period_low * 1000;
   float alpha   = filter_rc; 
   vel_fil = (1 - alpha) * vel_fil + alpha * vel_raw;
@@ -344,11 +341,7 @@ void ctl(){
     pos_error_int = 0;
     vel_error_old = 0;
     pos_error_old = 0;
-<<<<<<< HEAD
     millis_old = 0;
-=======
-    millis_old = 0:
->>>>>>> 436ebf6dbcd8fb5aab732217faf53d18eccd8efd
     vel_fil = 0;
     
   }
@@ -364,11 +357,7 @@ void ctl(){
     pos_error_int = 0;
     vel_error_old = 0;
     pos_error_old = 0;
-<<<<<<< HEAD
     millis_old = 0;
-=======
-    millis_old = 0:
->>>>>>> 436ebf6dbcd8fb5aab732217faf53d18eccd8efd
     vel_fil = 0;
   }
   //////////////////////////////////////////////////////
@@ -429,11 +418,7 @@ void ctl(){
     pos_error_int = 0 ;
     vel_error_old = 0;
     pos_error_old = 0;
-<<<<<<< HEAD
     millis_old = 0;
-=======
-    millis_old = 0:
->>>>>>> 436ebf6dbcd8fb5aab732217faf53d18eccd8efd
     vel_fil = 0;
     
     dri_pwm    = pwm_zer_dri ;
@@ -445,11 +430,7 @@ void ctl(){
     pos_error_int = 0 ;
     vel_error_old = 0;
     pos_error_old = 0;
-<<<<<<< HEAD
     millis_old = 0;
-=======
-    millis_old = 0:
->>>>>>> 436ebf6dbcd8fb5aab732217faf53d18eccd8efd
     vel_fil = 0;
     
     dri_pwm    = pwm_zer_dri ;
@@ -464,12 +445,8 @@ void ctl(){
   vel_old = vel_fil;
   vel_error_old = 0;
   pos_error_old = 0;
-<<<<<<< HEAD
   millis_old = 0;
   vel_fil = 0;
-=======
-  millis_old = 0:
->>>>>>> 436ebf6dbcd8fb5aab732217faf53d18eccd8efd
 }
 
 
